@@ -17,27 +17,63 @@ const defaultState = [
   { value: 'T-Shirts', id: uniqueId(), packed: false },
   { value: 'Belt', id: uniqueId(), packed: false },
   { value: 'Passport', id: uniqueId(), packed: true },
-  { value: 'Sandwich', id: uniqueId(), packed: true },
+  { value: 'Sandwich', id: uniqueId(), packed: true }
 ];
 
 class Application extends Component {
   state = {
-    // Set the initial state,
+    items: defaultState
   };
 
-  // How are we going to manipulate the state?
-  // Ideally, users are going to want to add, remove,
-  // and check off items, right?
+  handleChange = e => {
+    e.persist();
+    this.setState(state => {
+      const { items } = state;
+      const newItem = state.items.find(item => item.id === e.target.id);
+      newItem.packed = !newItem.packed;
+      const itemIndex = state.items.indexOf(newItem);
+      items[itemIndex] = newItem;
+      return {
+        items
+      };
+    });
+  };
+
+  handleRemove = id => {
+    this.setState(state => {
+      const { items } = state;
+      const newItem = state.items.find(item => item.id === id);
+      const itemIndex = state.items.indexOf(newItem);
+      items.splice(itemIndex, 1);
+      return { items };
+    });
+  };
+
+  onSubmit = item => {
+    const { items } = this.state;
+    items.unshift(item);
+    this.setState({ items });
+  };
 
   render() {
-    // Get the items from state
+    const { items } = this.state;
 
     return (
       <div className="Application">
-        <NewItem />
+        <NewItem onSubmit={this.onSubmit} />
         <CountDown />
-        <Items title="Unpacked Items" items={[]} />
-        <Items title="Packed Items" items={[]} />
+        <Items
+          handleChange={this.handleChange}
+          handleRemove={this.handleRemove}
+          title="Unpacked Items"
+          items={items.filter(item => !item.packed)}
+        />
+        <Items
+          handleChange={this.handleChange}
+          handleRemove={this.handleRemove}
+          title="Packed Items"
+          items={items.filter(item => item.packed)}
+        />
         <button className="button full-width">Mark All As Unpacked</button>
       </div>
     );
